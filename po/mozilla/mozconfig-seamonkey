@@ -1,0 +1,14 @@
+#ac_add_options --disable-compile-environment
+
+mk_add_options MOZ_OBJDIR=/home/pasqual/treball/altres/construccio_paquets_firefox/mozobj/seamonkey-valencia
+ac_add_options --disable-libjpeg-turbo
+
+ac_add_options --with-l10n-base=/home/pasqual/treball/altres/construccio_paquets_firefox/l10n
+
+ac_add_options --enable-application=suite
+
+ac_add_options --enable-official-branding
+
+ac_add_options --disable-gstreamer
+
+ac_add_options --disable-pulseaudio
