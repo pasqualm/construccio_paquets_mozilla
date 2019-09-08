@@ -1,16 +1,18 @@
 #ac_add_options --disable-compile-environment
 
-mk_add_options MOZ_OBJDIR=/home/pasqual/treball/altres/construccio_paquets_mozilla/mozobj/thunderbird-valencia
+mk_add_options MOZ_OBJDIR=/home/pasqual/treball/construccio_paquets_mozilla/mozobj/thunderbird-valencia
 ac_add_options --disable-libjpeg-turbo
 
-ac_add_options --with-l10n-base=/home/pasqual/treball/altres/construccio_paquets_mozilla/l10n
+ac_add_options --with-l10n-base=/home/pasqual/treball/construccio_paquets_mozilla/l10n
 
-ac_add_options --enable-application=mail
+ac_add_options --enable-application=comm/mail
 
 ac_add_options --enable-calendar
 
+#mk_add_options MOZ_CO_LOCALES=ca-valencia
+
 ac_add_options --enable-official-branding
 
-ac_add_options --disable-gstreamer
+#ac_add_options --disable-gstreamer
 
 ac_add_options --disable-pulseaudio

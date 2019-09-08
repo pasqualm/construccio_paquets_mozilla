@@ -1,0 +1,51 @@
+#!/bin/bash
+
+test -d "$1"
+
+tmp=`mktemp`
+
+find $1 -name \*.ftl | while read ca
+#find . -name "resetProfile.ftl.ftl" | while read ca 
+do
+	while IFS= read -r str; 
+	do
+	
+		IFS='='
+		read -ra ADDR <<< "$str" # str is read into an array as tokens separated by IFS
+		count=1
+		primera_part=""
+		segona_part=""
+		for i in "${ADDR[@]}";
+		do # access each element of array
+			if [[ $count -eq 1 ]]
+			then
+				primera_part=$i
+			else
+				segona_part=$segona_part$i
+				if [ $count -lt ${#ADDR[@]} ]
+				then
+					segona_part=${segona_part}${separ}
+				fi
+			fi
+			count=$(( $count + 1 ))
+		done
+		#echo primera_part: "${primera_part}"
+		#echo segona_part: "${segona_part}"
+		#echo 
+		if [ -n "$segona_part" ]; then
+			segona_part=`echo "msgstr ${segona_part}" | ./src2valencia-moz.sed | cut -c 8-`
+			primera_part="${primera_part}=${segona_part}"
+		fi
+		if [ "${str: -1}" = "=" ]
+		then 
+			primera_part="${primera_part}="
+		fi
+		echo "${primera_part}" >> $tmp
+		
+		IFS=' '
+		#echo "Text read from file: $str"
+	done < $ca
+	#echo $ca
+	#echo $tmp
+	mv $tmp $ca
+done

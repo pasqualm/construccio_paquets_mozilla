@@ -33,10 +33,11 @@ fi
 
 echo Inicialitza el directori creant totes les carpetes que fan falta, baixant el fitxers que corresponga i inicialitzant els repositoris
 
-echo 
-echo Descarregant fitxer get_moz_enUS.py
-wget --quiet -r -O get_moz_enUS.py https://raw.githubusercontent.com/translate/translate/master/tools/mozilla/get_moz_enUS.py
-chmod a+x get_moz_enUS.py
+#no fa falta, ve amb el paquet translate-toolkit
+#echo 
+#echo Descarregant fitxer get_moz_enUS.py
+#wget --quiet -r -O get_moz_enUS.py https://raw.githubusercontent.com/translate/translate/master/tools/mozilla/get_moz_enUS.py
+#chmod a+x get_moz_enUS.py
 
 echo 
 echo Descarregant valencianitzador de fitxers font
@@ -46,14 +47,22 @@ wget --quiet -r -O po/src2valencia-moz.sed https://raw.githubusercontent.com/Sof
 chmod a+x po/src2valencia-moz.sed
 
 echo 
-echo Clonat repositoris de locale en català
+echo Clonant repositoris de locale en català
 mkdir -p l10n
 hg clone -- http://hg.mozilla.org/releases/l10n/mozilla-beta/ca/ l10n/ca-beta
 hg clone -- http://hg.mozilla.org/releases/l10n/mozilla-release/ca/ l10n/ca-release
+hg clone -- https://hg.mozilla.org/l10n-central/ca l10n/ca-central
 
 echo 
-echo Clonat repositori $repositori de Firefox
+echo Clonant repositori $repositori de Firefox
 hg clone -- https://hg.mozilla.org/releases/mozilla-$repositori/ mozilla-$repositori
 echo 
-echo Clonat repositori $repositori de Thunderbird
-hg clone -- https://hg.mozilla.org/releases/comm-$repositori/ comm-$repositori
+
+echo Clonant repositori $repositori contenidor de firefox per a Thunderbird
+hg clone -- https://hg.mozilla.org/releases/mozilla-$repositori/ comm-$repositori
+
+mkdir comm-$repositori/comm
+echo
+echo clonant subrepositori de thunderbird
+hg clone -- https://hg.mozilla.org/releases/comm-$repositori/ comm-$repositori/comm
+

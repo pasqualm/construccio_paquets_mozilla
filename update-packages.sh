@@ -8,10 +8,15 @@ bad_arguments () {
 	echo	update-packages.sh -r beta -p thunderbird
 	echo	update-packages.sh -r beta -p firefox
 	echo	update-packages.sh -r esr38 -p thunderbird -t THUNDERBIRD_38_2_0_RELEASE
+	echo	update-packages.sh -r esr45 -p thunderbird -t THUNDERBIRD_45_0_RELEASE
 	echo	update-packages.sh -r esr38 -p firefox -t FIREFOX_38_2_1esr_RELEASE
 	echo	update-packages.sh -r release -p firefox -t FIREFOX_40_0_3_RELEASE
 	echo 
-	echo Consultar repositoris disponibles en https://hg.mozilla.org/releases/mozilla-esr38/
+	echo Consultar repositoris disponibles en:
+	echo   https://hg.mozilla.org/releases/mozilla-esr38/tags
+	echo   https://hg.mozilla.org/releases/comm-esr38/tags
+	echo   https://hg.mozilla.org/releases/comm-esr45/tags
+	echo   https://hg.mozilla.org/releases/mozilla-release/tags
 	echo
 	echo Consultar els tags disponibles en el repositori que corresponga, per exemple:
 	echo http://hg.mozilla.org/releases/l10n/mozilla-release/ca/tags 
@@ -95,6 +100,7 @@ if [[ $PRODUCTE == "firefox" ]]; then
 	#mkdir -p $OBJFF/seamonkey-valencia
 	#if [ "$debug" != "true" ]; then
 		cd mozilla-$VERSION
+		./mach mercurial-setup --update-only
 		hg pull -u
 		hg update --clean $REPO_TAG
 		cd ..
@@ -104,10 +110,12 @@ else
 	mkdir -p $OBJFF/thunderbird-valencia
 	#if [ "$debug" != "true" ]; then
 		cd comm-$VERSION
+		./mach mercurial-setup --update-only
+		cd comm
 		hg pull -u
 		hg update --clean $REPO_TAG
 		python client.py checkout
-		cd ..
+		cd ../..
 	#fi
 fi
 
@@ -118,43 +126,71 @@ hg pull -u
 hg update --clean
 cd ../..
 
+# actualitza el repo de fitxers d'idioma en format ftl
+cd l10n/ca-central
+hg pull -u
+#hg update --clean $REPO_TAG
+hg update --clean
+cd ../..
 
 # Fa copia de seguretat i ho borra tot
 #-----------------------------------------
 rm -rf l10n/en-US
 rm -rf po/ca
+rm -rf po/ca-fluent
 
 # Crea estructura  l10n/en-US
 #----------------------------------------
-get_moz_enUS.py -s mozilla-$VERSION -d l10n -p browser
-get_moz_enUS.py -s comm-$VERSION -d l10n -p mail
-get_moz_enUS.py -s comm-$VERSION -d l10n -p calendar
+if [[ $PRODUCTE == "firefox" ]]; then
+	get_moz_enUS.py -s mozilla-$VERSION -d l10n -p browser
+else
+	get_moz_enUS.py -s comm-$VERSION -d l10n -p browser
+fi
+get_moz_enUS.py -s comm-$VERSION/comm -d l10n -p mail
+get_moz_enUS.py -s comm-$VERSION/comm -d l10n -p calendar
 #Patch irc
-mkdir -p l10n/en-US/extensions/irc
-cp -rf comm-$VERSION/mozilla/extensions/irc/locales/en-US/* l10n/en-US/extensions/irc
+#mkdir -p l10n/en-US/extensions/irc
+#cp -rf comm-$VERSION/mozilla/extensions/irc/locales/en-US/* l10n/en-US/extensions/irc
 
 # Crea fitxers PO catalans  a po/ca
 #-----------------------------------------
 #mkdir -p po/ca
-moz2po -t l10n/en-US -i l10n/ca-$L10N_VERSION -o po/ca
+#moz2po -t l10n/en-US -i l10n/ca-$L10N_VERSION -o po/ca
+moz2po -t l10n/en-US -i l10n/ca-central -o po/ca
+# no es pot utilitzar perque no funciona be, algunes coses no es passen el .po
+#l20n2po -t l10n/en-US -i l10n/ca-central -o po/ca-fluent
 
 # Update SVN
 cd po
-svn up
+#svn up
 
 #Copy ca-valencia
 rm -rf ca-valencia
 cp -rf ca ca-valencia
-
 ./recorre_les_fonts-moz ca-valencia
 
+rm -rf ca-valencia-fluent
+cp -rf ../l10n/ca-central ca-valencia-fluent
+find ca-valencia-fluent -type f -not -name "*.ftl" -delete
+rm -rf ca-valencia-fluent/.hg
+./recorre_les_fonts-moz-fluent ca-valencia-fluent
 cd ..
 
 rm -rf l10n/ca-valencia
 po2moz -t l10n/en-US -i po/ca-valencia -o l10n/ca-valencia
+#esborrem els .ftl.ftl, no serveixen per a res i no se que fan alli
+find l10n/ca-valencia -type f -name "*.ftl.ftl" -delete
+#no es pot utilitzar perque per als ftl el mecanisme de conversio a po no va be
+#po2l20n -t l10n/en-US -i po/ca-valencia-fluent -o l10n/ca-valencia
+#copiem directament, hem fet l'adaptacio sobre els ftl directament
+cp -rf po/ca-valencia-fluent/* l10n/ca-valencia
 
-cp -rf l10n/ca-$L10N_VERSION/browser/searchplugins/* l10n/ca-valencia/browser/searchplugins
-cp -rf l10n/ca-$L10N_VERSION/mail/searchplugins/* l10n/ca-valencia/mail/searchplugins
+
+#cp -rf l10n/ca-$L10N_VERSION/browser/searchplugins/* l10n/ca-valencia/browser/searchplugins
+#cp -rf l10n/ca-$L10N_VERSION/mail/searchplugins/* l10n/ca-valencia/mail/searchplugins
+
+#cp -rf l10n/ca-$L10N_VERSION/suite/searchplugins l10n/ca-valencia/browser
+#cp -rf l10n/ca-$L10N_VERSION/mail/searchplugins l10n/ca-valencia/mail
 
 #Process files
 perl po/processMozFile.pl l10n/ca-valencia/browser/chrome/browser/browser.dtd dtd savePageCmd.accesskey2 "d"
@@ -174,8 +210,9 @@ sed -i s~with-l10n-base=.*~with-l10n-base=`pwd`\/l10n~ po/mozilla/mozconfig-thun
 
 cp -f po/mozilla/mozconfig-firefox mozilla-$VERSION/.mozconfig
 cp -f po/mozilla/mozconfig-thunderbird comm-$VERSION/.mozconfig
-
 base=`pwd` 
+#workaround perque el make -f ../../mozilla-$VERSION/client.mk no es queixe
+#export MACH=true
 
 if [[ $PRODUCTE == "firefox" ]]; then
 	#####################################################################################
@@ -183,7 +220,8 @@ if [[ $PRODUCTE == "firefox" ]]; then
 	echo
 	echo Fent make de Firefox
 	cd $OBJFF/firefox-valencia
-	make -f ../../mozilla-$VERSION/client.mk configure
+	#make -f ../../mozilla-$VERSION/client.mk configure
+	../../mozilla-$VERSION/mach configure
 	cd config
 	make
 
@@ -195,6 +233,8 @@ if [[ $PRODUCTE == "firefox" ]]; then
 
 	cd $base
 	LASTFFXPI=`ls -lrt $OBJFF/firefox-valencia/dist/linux-x86_64/xpi | awk '{ f=$NF }; END{ print f }'`
+	zip -d $LASTTBXPI browser/chrome/ca-valencia/locale/browser/searchplugins 
+
 	LASTFFXPIOUT=$LASTFFXPI.$DATE.xpi
 	perl po/modifyMaxMin.pl $OBJFF/firefox-valencia/dist/linux-x86_64/xpi/$LASTFFXPI
 	cd $OBJFF/firefox-valencia/dist/linux-x86_64/xpi
@@ -203,12 +243,23 @@ if [[ $PRODUCTE == "firefox" ]]; then
 	cp $LASTFFXPI tmp
 	cd tmp
 	unzip -q $LASTFFXPI
-	find . -name ".mkdir.done" | xargs rm
+	find . -name ".mkdir.done" -exec rm -rf {} \;
 	rm -rf browser/crashreporter-override.ini
 	rm -rf browser/defaults
 	rm -rf browser/searchplugins
+	rm -f browser/chrome/ca-valencia/locale/browser/searchplugins/amazondotcom.xml browser/chrome/ca-valencia/locale/browser/searchplugins/wikipedia.xml browser/chrome/ca-valencia/locale/browser/searchplugins/yahoo.xml
+
+	cp -rf $base/l10n/ca-$L10N_VERSION/suite/searchplugins/* browser/chrome/ca-valencia/locale/browser/searchplugins
+	cp -rf $base/llibres.xml browser/chrome/ca-valencia/locale/browser/searchplugins
+	
+	echo "{\"default\": {\"visibleDefaultEngines\": [\"google\", \"bing\", \"diec2\", \"ddg\", \"twitter\", \"wikipedia-ca\", \"llibres\"]}}" >browser/chrome/ca-valencia/locale/browser/searchplugins/list.json
 	rm $LASTFFXPI
-	zip -q -r $LASTFFXPI chrome.manifest install.rdf browser chrome
+	# reanomena l'id de l'extensio, no esta funcionant be
+	#if [[ $VERSION != "release" ]] && [[ $VERSION != "beta" ]]; then
+	#	sed -i "s~{ec8030f7-c20a-464f-9b0e-13a3a9e97384}~firefoxESRvalencia@softvalencia.org~" chrome.manifest
+	#	sed -i "s~{ec8030f7-c20a-464f-9b0e-13a3a9e97384}~firefoxESRvalencia@softvalencia.org~" install.rdf
+	#fi
+	zip -q -r $LASTFFXPI chrome.manifest install.rdf browser chrome localization manifest.json
 	cp $LASTFFXPI $OUTPATH/$LASTFFXPIOUT
 	#####################################################################################
 else
@@ -217,14 +268,15 @@ else
 	echo
 	echo Fent make de Thunderbird
 	cd $OBJFF/thunderbird-valencia
-	make -f ../../comm-$VERSION/client.mk configure
+	#make -f ../../comm-$VERSION/client.mk configure
+	../../comm-$VERSION/mach configure
 	cd config
 	make
 	#read -p "Press [Enter] key to continue ..."
 	
 	echo
 	echo Fent make de langpacks de Thunderbird
-	cd ../mail/locales
+	cd ../comm/mail/locales
 	make merge-ca-valencia LOCALE_MERGEDIR=./mergedir
 	make langpack-ca-valencia LOCALE_MERGEDIR=./mergedir
 	# intente fer que es construisca tambe el calendari
@@ -233,7 +285,7 @@ else
 	#read -p "Press [Enter] key to continue ..."
 
 	cd $base
-	LASTTBXPI=`ls -lrt $OBJFF/thunderbird-valencia/dist/linux-x86_64/xpi | awk '{ f=$NF }; END{ print f }'`
+	LASTTBXPI=`ls -lrt $OBJFF/thunderbird-valencia/dist/linux-x86_64/xpi | awk '{ f=$NF }; END{ print f }'`	
 	LASTTBXPIOUT=$LASTTBXPI.$DATE.xpi
 	perl po/modifyMaxMin.pl $OBJFF/thunderbird-valencia/dist/linux-x86_64/xpi/$LASTTBXPI
 	cd $OBJFF/thunderbird-valencia/dist/linux-x86_64/xpi
@@ -242,12 +294,12 @@ else
 	cp $LASTTBXPI tmp
 	cd tmp
 	unzip -q $LASTTBXPI
-	find . -name ".mkdir.done" | xargs rm
+	find . -name ".mkdir.done" -exec rm -rf {} \;
 	rm -rf mail/crashreporter-override.ini
 	rm -rf mail/defaults
 	rm -rf mail/searchplugins
 	rm $LASTTBXPI
-	zip -q -r $LASTTBXPI chrome.manifest install.rdf mail chrome
+	zip -q -r $LASTTBXPI chrome.manifest install.rdf mail chrome localization manifest.json
 	cp $LASTTBXPI $OUTPATH/$LASTTBXPIOUT
 	#####################################################################################
 fi

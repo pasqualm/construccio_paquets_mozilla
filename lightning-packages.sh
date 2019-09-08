@@ -2,17 +2,17 @@
 
 bad_arguments () {
 	echo Has cridat l\'script passant un conjunt incorrecte de paremetres, la forma correcta de cridar-lo es:
-	echo "lightning-packages.sh -c [releases|candidates|nightly] -v ftp_folder"
+	echo "lightning-packages.sh -c releases|candidates|nightly [-v ftp_folder"]
 	echo
 	echo Exemples:
-	echo	lightning-packages.sh -c releases -v 4.0.2
+	echo	lightning-packages.sh -c releases
 	echo	lightning-packages.sh -c candidates -v 4.3b1-candidates
 	echo	lightning-packages.sh -c nightly -v latest-comm-central
 	echo 
 	echo L''script afegira el locale ca-valencia al paquets que trobe en la ruta: 
 	echo http://ftp.mozilla.org/pub/calendar/lightning/$releases/$ftp_folder
 	echo 
-	echo Aquest script s''ha d''executar posterioment a l''execucio de l''script de construccio del paquet de thunderird ja que 
+	echo Aquest script s''ha d''executar posterioment a l''execucio de l''script de construccio del paquet de thunderbird ja que 
 	echo aquest preparen les cadenes de text que despres aquest script injecta
 	exit -1
 }  
@@ -48,7 +48,7 @@ if [[ $CHANNEL == "" ]]; then
 fi
 
 # si no passem cap versio l'script no esta ben parametritzat
-if [[ $FTP_FOLDER == "" ]]; then
+if [[ $FTP_FOLDER == "" ]] && [[ $CHANNEL != "releases" ]]; then
 	bad_arguments
 fi
 # si no passem cap producte l'script no esta ben parametritzat
@@ -62,6 +62,7 @@ OBJFF=`realpath $0 | xargs dirname`/mozobj
 CC=gcc-4.7
 CXX=g++-4.7
 DATE=`date +%Y%m%d-%H%M`
+release_version=esr45
 
 # Obte els paquets de lightning
 #-----------------------------------------
@@ -71,13 +72,20 @@ mkdir -p $OBJFF/lightning-valencia
 #descarrega els paquets de lighting als que anem a ficar la nova locale
 case $CHANNEL in
 	releases)
-		wget http://ftp.mozilla.org/pub/calendar/lightning/$CHANNEL/$FTP_FOLDER/linux/lightning.xpi -O $OBJFF/lightning-valencia/lightning_linux.xpi
-		wget http://ftp.mozilla.org/pub/calendar/lightning/$CHANNEL/$FTP_FOLDER/mac/lightning.xpi -O $OBJFF/lightning-valencia/lightning_mac.xpi
-		wget http://ftp.mozilla.org/pub/calendar/lightning/$CHANNEL/$FTP_FOLDER/win32/lightning.xpi -O $OBJFF/lightning-valencia/lightning_win32.xpi
-		OUTPATH=`realpath $0 | xargs dirname`/paquets_finals-esr38
+		#echo Fent ftp de http://ftp.mozilla.org/pub/calendar/lightning/$CHANNEL/$FTP_FOLDER
+		#wget http://ftp.mozilla.org/pub/calendar/lightning/$CHANNEL/$FTP_FOLDER/linux/lightning.xpi -O $OBJFF/lightning-valencia/lightning_linux.xpi
+		#wget http://ftp.mozilla.org/pub/calendar/lightning/$CHANNEL/$FTP_FOLDER/mac/lightning.xpi -O $OBJFF/lightning-valencia/lightning_mac.xpi
+		#wget http://ftp.mozilla.org/pub/calendar/lightning/$CHANNEL/$FTP_FOLDER/win32/lightning.xpi -O $OBJFF/lightning-valencia/lightning_win32.xpi
+		echo Fent ftp de latest release
+		wget https://addons.mozilla.org/thunderbird/downloads/latest/2313/platform:2/addon-2313-latest.xpi?src=dp-btn-primary -O $OBJFF/lightning-valencia/lightning_linux.xpi
+		wget https://addons.mozilla.org/thunderbird/downloads/latest/2313/platform:3/addon-2313-latest.xpi?src=dp-btn-primary -O $OBJFF/lightning-valencia/lightning_mac.xpi
+		wget https://addons.mozilla.org/thunderbird/downloads/latest/2313/platform:5/addon-2313-latest.xpi?src=dp-btn-primary -O $OBJFF/lightning-valencia/lightning_win32.xpi
+		FTP_FOLDER=latest
+		OUTPATH=`realpath $0 | xargs dirname`/paquets_finals-$release_version
 		mkdir -p $OUTPATH
 		;;
 	candidates)
+		echo Fent ftp de http://ftp.mozilla.org/pub/calendar/lightning/$CHANNEL/$FTP_FOLDER/build1
 		wget --no-parent -r -A 'lightning*.xpi' http://ftp.mozilla.org/pub/calendar/lightning/$CHANNEL/$FTP_FOLDER/build1/linux-i686/
 		wget --no-parent -r -A 'lightning*.xpi' http://ftp.mozilla.org/pub/calendar/lightning/$CHANNEL/$FTP_FOLDER/build1/mac/
 		wget --no-parent -r -A 'lightning*.xpi' http://ftp.mozilla.org/pub/calendar/lightning/$CHANNEL/$FTP_FOLDER/build1/win32/
@@ -89,6 +97,7 @@ case $CHANNEL in
 		mkdir -p $OUTPATH
 		;;
 	nightly)
+		echo Fent ftp de http://ftp.mozilla.org/pub/calendar/lightning/$CHANNEL/$FTP_FOLDER/
 		wget --no-parent -r -A 'lightning*.xpi' http://ftp.mozilla.org/pub/calendar/lightning/$CHANNEL/$FTP_FOLDER/
 		mv ftp.mozilla.org/pub/calendar/lightning/$CHANNEL/$FTP_FOLDER/lightning-*.linux-i686.xpi $OBJFF/lightning-valencia/lightning_linux.xpi
 		mv ftp.mozilla.org/pub/calendar/lightning/$CHANNEL/$FTP_FOLDER/lightning-*.mac.xpi $OBJFF/lightning-valencia/lightning_mac.xpi
@@ -137,8 +146,12 @@ zip -q $OBJFF/lightning-valencia/lightning_win32.xpi chrome.manifest
 rm -rf chrome chrome.manifest
 
 #mou paquets construits a la seua ubicacio final
-mv $OBJFF/lightning-valencia/lightning_linux.xpi $OUTPATH/lightning_linux-$FTP_FOLDER-$CHANNEL.`date +"%Y%m%d-%H%M"`.xpi
-mv $OBJFF/lightning-valencia/lightning_mac.xpi $OUTPATH/lightning_mac-$FTP_FOLDER-$CHANNEL.`date +"%Y%m%d-%H%M"`.xpi
-mv $OBJFF/lightning-valencia/lightning_win32.xpi $OUTPATH/lightning_win32-$FTP_FOLDER-$CHANNEL.`date +"%Y%m%d-%H%M"`.xpi
+my_datetime=`date +"%Y%m%d-%H%M"`
+mv $OBJFF/lightning-valencia/lightning_linux.xpi $OUTPATH/lightning_linux-$FTP_FOLDER-$CHANNEL.$my_datetime.xpi
+ln -f -s $OUTPATH/lightning_linux-$FTP_FOLDER-$CHANNEL.$my_datetime.xpi $OUTPATH/lightning_linux-ca-valencia-latest.xpi
+mv $OBJFF/lightning-valencia/lightning_mac.xpi $OUTPATH/lightning_mac-$FTP_FOLDER-$CHANNEL.$my_datetime.xpi
+ln -f -s $OUTPATH/lightning_mac-$FTP_FOLDER-$CHANNEL.$my_datetime.xpi $OUTPATH/lightning_mac-ca-valencia-latest.xpi
+mv $OBJFF/lightning-valencia/lightning_win32.xpi $OUTPATH/lightning_win32-$FTP_FOLDER-$CHANNEL.$my_datetime.xpi
+ln -f -s $OUTPATH/lightning_win32-$FTP_FOLDER-$CHANNEL.$my_datetime.xpi $OUTPATH/lightning_win32-ca-valencia-latest.xpi
 
 echo Construccio finalitzada :\)
