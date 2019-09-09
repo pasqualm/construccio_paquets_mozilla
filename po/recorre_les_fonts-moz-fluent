@@ -5,7 +5,7 @@ test -d "$1"
 tmp=`mktemp`
 
 find $1 -name \*.ftl | while read ca
-#find . -name "resetProfile.ftl.ftl" | while read ca 
+#find . -name "aboutCertError.ftl" | while read ca 
 do
 	while IFS= read -r str; 
 	do
@@ -24,7 +24,7 @@ do
 				segona_part=$segona_part$i
 				if [ $count -lt ${#ADDR[@]} ]
 				then
-					segona_part=${segona_part}${separ}
+					segona_part="${segona_part}="
 				fi
 			fi
 			count=$(( $count + 1 ))
