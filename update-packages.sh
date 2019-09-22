@@ -156,7 +156,7 @@ get_moz_enUS.py -s comm-$VERSION/comm -d l10n -p calendar
 #-----------------------------------------
 #mkdir -p po/ca
 #moz2po -t l10n/en-US -i l10n/ca-$L10N_VERSION -o po/ca
-moz2po -t l10n/en-US -i l10n/ca-central -o po/ca
+moz2po -t l10n/en-US -i l10n/ca-central -o po/ca -x "*.ftl" -x "*.properties"
 # no es pot utilitzar perque no funciona be, algunes coses no es passen el .po
 #l20n2po -t l10n/en-US -i l10n/ca-central -o po/ca-fluent
 
@@ -170,16 +170,17 @@ cp -rf ca ca-valencia
 ./recorre_les_fonts-moz ca-valencia
 
 rm -rf ca-valencia-fluent
-cp -rf ../l10n/ca-central ca-valencia-fluent
-find ca-valencia-fluent -type f -not -name "*.ftl" -delete
-rm -rf ca-valencia-fluent/.hg
+cd ../l10n/ca-central
+find . -name *.ftl -or -name *.properties | cpio -pdm ../../po/ca-valencia-fluent/
+
+cd ../../po/ca-valencia-fluent
 ./recorre_les_fonts-moz-fluent ca-valencia-fluent
 cd ..
 
 rm -rf l10n/ca-valencia
 po2moz -t l10n/en-US -i po/ca-valencia -o l10n/ca-valencia
 #esborrem els .ftl.ftl, no serveixen per a res i no se que fan alli
-find l10n/ca-valencia -type f -name "*.ftl.ftl" -delete
+#find l10n/ca-valencia -type f -name "*.ftl.ftl" -delete
 #no es pot utilitzar perque per als ftl el mecanisme de conversio a po no va be
 #po2l20n -t l10n/en-US -i po/ca-valencia-fluent -o l10n/ca-valencia
 #copiem directament, hem fet l'adaptacio sobre els ftl directament

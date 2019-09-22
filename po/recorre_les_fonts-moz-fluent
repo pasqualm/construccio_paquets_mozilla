@@ -4,17 +4,23 @@ test -d "$1"
 
 tmp=`mktemp`
 
-find $1 -name \*.ftl | while read ca
-#find . -name "aboutCertError.ftl" | while read ca 
+SEDSCRIPT=`realpath $0 | xargs dirname`/src2valencia-moz.sed
+
+# recorreguem tots els fitxers ftl i properties
+find $1 -name \*.ftl -or -name \*.properties -or -name \*.ini | while read ca
+#find /home/pasqual/treball/construccio_paquets_mozilla/l10n-central/kk -name "aboutCertError.ftl" | while read ca 
 do
+	# llegim totes les linies del fitxer
 	while IFS= read -r str; 
 	do
-	
+		#utilitzem per trencar les linies el carcter = per separar la etiqueta de la cadena a traduir
 		IFS='='
+		#trenquem la linia en un array de les peces separades pel IFS
 		read -ra ADDR <<< "$str" # str is read into an array as tokens separated by IFS
 		count=1
 		primera_part=""
 		segona_part=""
+		#ens anem a quedar amb la primera peça (l'etiqueta) i les restes unides (la cadena a traduir)
 		for i in "${ADDR[@]}";
 		do # access each element of array
 			if [[ $count -eq 1 ]]
@@ -33,19 +39,22 @@ do
 		#echo segona_part: "${segona_part}"
 		#echo 
 		if [ -n "$segona_part" ]; then
-			segona_part=`echo "msgstr ${segona_part}" | ./src2valencia-moz.sed | cut -c 8-`
+			segona_part=`echo "msgstr ${segona_part}" | $SEDSCRIPT | cut -c 8-`
 			primera_part="${primera_part}=${segona_part}"
 		fi
+		# si l'ultim caracter de la linia era un = el tornem a ficar
 		if [ "${str: -1}" = "=" ]
 		then 
 			primera_part="${primera_part}="
 		fi
-		echo "${primera_part}" >> $tmp
+		echo "${primera_part}"
 		
 		IFS=' '
 		#echo "Text read from file: $str"
-	done < $ca
+	done < $ca > $tmp
 	#echo $ca
 	#echo $tmp
+
+	#sobrescrivim el fitxer resultat amb el resultat
 	mv $tmp $ca
 done
