@@ -66,3 +66,19 @@ sudo pip3 install -U fluent
 
 i el cbindgen aixi (si el de la distro es massa vell):
 cargo install cbindgen --force
+
+# per veure les diferecies de fitxers
+hg status
+
+# per agregar un nou fitxer al repo 
+hg add hg add browser/browser/fxaDisconnect.ft
+
+# per veure el contingut de les diferencies 
+hg diff -g
+
+Per a fer un nou patch
+hg qnew -m "Bug 1605194 - Manual update for repo ca-valencia in l10n-central." 1605194.patch
+hg qpop -a
+
+# per buscar errors amb compare-locales:
+compare-locales ./gecko-strings/_configs/browser.toml ./l10n-central ca-valencia | less

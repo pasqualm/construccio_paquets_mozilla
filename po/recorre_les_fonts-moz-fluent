@@ -8,7 +8,7 @@ SEDSCRIPT=`realpath $0 | xargs dirname`/src2valencia-moz.sed
 
 # recorreguem tots els fitxers ftl i properties
 find $1 -name \*.ftl -or -name \*.properties -or -name \*.ini | while read ca
-#find /home/pasqual/treball/construccio_paquets_mozilla/l10n-central/kk -name "aboutCertError.ftl" | while read ca 
+#find /home/pasqual/treball/construccio_paquets_mozilla/l10n-central/tmp -name "newtab.ftl" | while read ca 
 do
 	# llegim totes les linies del fitxer
 	while IFS= read -r str; 
@@ -56,5 +56,6 @@ do
 	#echo $tmp
 
 	#sobrescrivim el fitxer resultat amb el resultat
+	chmod --reference=$ca $tmp
 	mv $tmp $ca
 done
