@@ -19,14 +19,12 @@ mkdir -p $L10NTMP
 #actualitza els fitxers d'idioma catala des del repo
 cd $PATH_ORIGINAL_L10N_CA
 hg pull -u
-#hg update --clean $REPO_TAG
 hg update --clean
 cd ../..
 
 #actualitza els fitxers d'idioma valencia des del repo
 cd $PATH_ORIGINAL_L10N_CA_VALENCIA
 hg pull -u
-#hg update --clean $REPO_TAG
 hg update --clean
 cd ../..
 

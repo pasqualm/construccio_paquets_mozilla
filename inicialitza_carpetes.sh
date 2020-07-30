@@ -66,3 +66,7 @@ echo
 echo clonant subrepositori de thunderbird
 hg clone -- https://hg.mozilla.org/releases/comm-$repositori/ comm-$repositori/comm
 
+mkdir gecko-strings
+echo
+echo clonant gecko-strings, s'utilitza per a compare-locales
+hg clone -- https://hg.mozilla.org/l10n/gecko-strings gecko-strings

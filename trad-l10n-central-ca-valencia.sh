@@ -7,7 +7,7 @@ if [ "$debug" == "true" ]; then
 fi
 
 # carpetes que no existeix en ca-valencia i per tant no es deuen traduir des de ca
-exclude_folders=( ".hgtags" ".hg" "calendar" "chat" "editor" "extensions" "mail" "mobile" "other-licenses" "suite" )
+exclude_folders=( ".hgtags" ".hg" "calendar" "chat" "editor" "./extensions" "mail" "mobile" "other-licenses" "suite" )
 
 # fitxer que no es deuen tocar en ca-valencia
 forbidden_files=( "region.properties" "intl.properties" "defines.inc" )
@@ -27,14 +27,14 @@ mkdir -p $L10NTMP
 
 #actualitza els fitxers d'idioma catala des del repo
 cd $PATH_ORIGINAL_L10N_CA
-#hg pull -u
-#hg update --clean
+hg pull -u
+hg update --clean
 cd ../..
 
 #actualitza els fitxers d'idioma valencia des del repo
 cd $PATH_ORIGINAL_L10N_CA_VALENCIA
-#hg pull -u
-#hg update --clean
+hg pull -u
+hg update --clean
 cd ../..
 
 # clona el repo original en el final

@@ -1,7 +1,7 @@
 #ac_add_options --disable-compile-environment
 
 mk_add_options MOZ_OBJDIR=/home/pasqual/treball/construccio_paquets_mozilla/mozobj/thunderbird-valencia
-ac_add_options --disable-libjpeg-turbo
+#ac_add_options --disable-libjpeg-turbo
 
 ac_add_options --with-l10n-base=/home/pasqual/treball/construccio_paquets_mozilla/l10n
 

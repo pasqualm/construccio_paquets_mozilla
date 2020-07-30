@@ -67,18 +67,36 @@ sudo pip3 install -U fluent
 i el cbindgen aixi (si el de la distro es massa vell):
 cargo install cbindgen --force
 
+el cbindgen es pot actualitzar amb:
+cargo install cargo-update
+cargo install-update -a
+
 # per veure les diferecies de fitxers
 hg status
 
 # per agregar un nou fitxer al repo 
-hg add hg add browser/browser/fxaDisconnect.ft
+hg add browser/browser/fxaDisconnect.ft
+
+# per llevar fitxer del repo 
+hg ¿¿???
+
+# per afegir i llevar tots
+hg addremove
 
 # per veure el contingut de les diferencies 
 hg diff -g
 
 Per a fer un nou patch
-hg qnew -m "Bug 1605194 - Manual update for repo ca-valencia in l10n-central." 1605194.patch
+hg qnew -m "Bug 1632904 - Manual update for repo ca-valencia in l10n-central." 1632904.patch
 hg qpop -a
 
 # per buscar errors amb compare-locales:
 compare-locales ./gecko-strings/_configs/browser.toml ./l10n-central ca-valencia | less
+
+Per fets commits manuls utilitzat aquest commit message:
+Manual update for repo ca-valencia in l10n-central
+
+Per que el hg push funcione cal ficar aquesta linia en el .hg/hgrc en la seccio paths:
+default-push = ssh://hg.mozilla.org/l10n-central/ca-valencia
+
+i fer un hg push

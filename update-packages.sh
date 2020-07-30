@@ -26,7 +26,7 @@ bad_arguments () {
 }  
 
 # habilita el mode de debug
-debug=true
+debug=false
 if [ "$debug" == "true" ]; then
 	set -x 
 fi
@@ -100,7 +100,7 @@ if [[ $PRODUCTE == "firefox" ]]; then
 	#mkdir -p $OBJFF/seamonkey-valencia
 	#if [ "$debug" != "true" ]; then
 		cd mozilla-$VERSION
-		./mach mercurial-setup --update-only
+		#./mach mercurial-setup --update-only
 		hg pull -u
 		hg update --clean $REPO_TAG
 		cd ..
@@ -110,11 +110,11 @@ else
 	mkdir -p $OBJFF/thunderbird-valencia
 	#if [ "$debug" != "true" ]; then
 		cd comm-$VERSION
-		./mach mercurial-setup --update-only
+		#./mach mercurial-setup --update-only
 		cd comm
 		hg pull -u
 		hg update --clean $REPO_TAG
-		python client.py checkout
+		#python client.py checkout
 		cd ../..
 	#fi
 fi
@@ -173,7 +173,7 @@ rm -rf ca-valencia-fluent
 cd ../l10n/ca-central
 find . -name *.ftl -or -name *.properties | cpio -pdm ../../po/ca-valencia-fluent/
 
-cd ../../po/ca-valencia-fluent
+cd ../../po
 ./recorre_les_fonts-moz-fluent ca-valencia-fluent
 cd ..
 
@@ -266,7 +266,17 @@ if [[ $PRODUCTE == "firefox" ]]; then
 else
 	#####################################################################################
 	# fase de creacio de la extensio de thunderbird 
-	echo
+	echo 	
+	echo Adaptant fitxers l10n.toml perque reconeguen ca-valencia com a locale valid
+	if ! grep -q ca-valencia "comm-$VERSION/comm/calendar/locales/l10n.toml"; then
+  		cp "comm-$VERSION/comm/calendar/locales/l10n.toml" "comm-$VERSION/comm/calendar/locales/l10n.toml.orig"
+		sed -i 's~locales = \[~locales = \["ca-valencia",~' "comm-$VERSION/comm/calendar/locales/l10n.toml"
+	fi
+	if ! grep -q ca-valencia "comm-$VERSION/comm/mail/locales/l10n.toml"; then
+  		cp "comm-$VERSION/comm/mail/locales/l10n.toml" "comm-$VERSION/comm/mail/locales/l10n.toml.orig"
+		sed -i 's~locales = \[~locales = \["ca-valencia",~' "comm-$VERSION/comm/mail/locales/l10n.toml"
+	fi
+	echo 
 	echo Fent make de Thunderbird
 	cd $OBJFF/thunderbird-valencia
 	#make -f ../../comm-$VERSION/client.mk configure
@@ -274,7 +284,7 @@ else
 	cd config
 	make
 	#read -p "Press [Enter] key to continue ..."
-	
+		
 	echo
 	echo Fent make de langpacks de Thunderbird
 	cd ../comm/mail/locales
@@ -288,7 +298,7 @@ else
 	cd $base
 	LASTTBXPI=`ls -lrt $OBJFF/thunderbird-valencia/dist/linux-x86_64/xpi | awk '{ f=$NF }; END{ print f }'`	
 	LASTTBXPIOUT=$LASTTBXPI.$DATE.xpi
-	perl po/modifyMaxMin.pl $OBJFF/thunderbird-valencia/dist/linux-x86_64/xpi/$LASTTBXPI
+	#perl po/modifyMaxMin.pl $OBJFF/thunderbird-valencia/dist/linux-x86_64/xpi/$LASTTBXPI
 	cd $OBJFF/thunderbird-valencia/dist/linux-x86_64/xpi
 	rm -rf tmp
 	mkdir tmp
