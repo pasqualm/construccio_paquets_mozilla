@@ -1,0 +1,14 @@
+#ac_add_options --disable-compile-environment
+
+mk_add_options MOZ_OBJDIR=/home/pootle/construccio_paquets_mozilla/mozobj/firefox-valencia
+ac_add_options --disable-libjpeg-turbo
+
+ac_add_options --with-l10n-base=/home/pootle/construccio_paquets_mozilla/l10n
+
+ac_add_options --enable-application=browser
+
+ac_add_options --enable-official-branding 
+
+ac_add_options --disable-gstreamer
+
+ac_add_options --disable-pulseaudio

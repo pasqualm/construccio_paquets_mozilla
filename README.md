@@ -99,4 +99,6 @@ Manual update for repo ca-valencia in l10n-central
 Per que el hg push funcione cal ficar aquesta linia en el .hg/hgrc en la seccio paths:
 default-push = ssh://hg.mozilla.org/l10n-central/ca-valencia
 
-i fer un hg push
+i fer un: 
+hg commit -m "Manual update for repo ca-valencia in l10n-central."
+hg push

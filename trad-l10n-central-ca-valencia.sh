@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # habilita el mode de debug
-debug=false
+debug=true
 if [ "$debug" == "true" ]; then
 	set -x 
 fi

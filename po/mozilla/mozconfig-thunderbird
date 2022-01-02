@@ -6,8 +6,9 @@ mk_add_options MOZ_OBJDIR=/home/pasqual/treball/construccio_paquets_mozilla/mozo
 ac_add_options --with-l10n-base=/home/pasqual/treball/construccio_paquets_mozilla/l10n
 
 ac_add_options --enable-application=comm/mail
+ac_add_options --with-app-basename=Thunderbird
 
-ac_add_options --enable-calendar
+# ac_add_options --enable-calendar
 
 #mk_add_options MOZ_CO_LOCALES=ca-valencia
 
@@ -16,3 +17,6 @@ ac_add_options --enable-official-branding
 #ac_add_options --disable-gstreamer
 
 ac_add_options --disable-pulseaudio
+
+# mach bootstrap em diu que ho fique
+# ac_add_options --enable-artifact-builds
